@@ -242,7 +242,7 @@
         <button onclick="goBack()" class="btn-back">
             ← RETAKE_LAYOUT
         </button>
-        <div>SYS_SESSION // GEN_01</div>
+        <div>SYS_SESSION // GEN_01 <span style="opacity:0.3; font-size:8px;">v2.0-MOBILE</span></div>
     </div>
     <div class="pose-counter" id="poseDisplay">0/0</div>
     </div>
@@ -380,7 +380,13 @@
                 };
             } catch (err) { 
                 console.error("Camera Error: ", err);
-                alert("Cannot access camera. Please ensure permissions are granted and no other app is using it."); 
+                // Instead of alert, show a message in the camBox
+                const camBox = document.getElementById('camBox');
+                camBox.innerHTML += `
+                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.8); color:white; z-index:100; text-align:center; padding:20px;">
+                        <p style="font-size:12px;">CAMERA_NOT_FOUND_OR_BLOCKED</p>
+                        <button onclick="location.reload()" style="margin-top:10px; padding:10px; background:white; color:black; font-family:'Space Mono'; font-size:10px;">RELOAD_SYSTEM</button>
+                    </div>`;
             }
         }
 
@@ -429,34 +435,41 @@
     async function startSequence() {
         if (photos.length >= maxPoses) return;
         
+        // Ensure video is playing
+        if (video.readyState < 2) {
+            console.warn("Camera not ready yet...");
+            return;
+        }
+
         try {
             startBtn.disabled = true;
             document.getElementById('filterContainer').style.display = 'none';
             const camBox = document.getElementById('camBox');
 
-            // COUNTDOWN WITH BEEP
+            // COUNTDOWN
             countdownEl.style.display = 'block';
             for (let i = 3; i >= 1; i--) {
                 countdownEl.innerText = i;
-                try { playSound('beep', 800); } catch(e) { console.warn("Audio fail", e); }
+                try { sfx.beep.play(); } catch(e) {}
                 await new Promise(r => setTimeout(r, 1000));
             }
             
             countdownEl.innerText = "";
             liveTag.style.display = 'block';
             
+            // Capture fewer frames for mobile stability (4 instead of 6)
             const currentPoseFrames = [];
-            for(let i=0; i<6; i++) {
+            for(let i=0; i<4; i++) {
                 const frame = captureFrameManual();
                 if (frame) currentPoseFrames.push(frame);
-                await new Promise(r => setTimeout(r, 150));
+                await new Promise(r => setTimeout(r, 200));
             }
 
-            // --- FLASH + SHUTTER + GLITCH ---
+            // FLASH + SHUTTER
             const flash = document.getElementById('flash');
             flash.style.display = 'block';
             camBox.classList.add('glitch-active');
-            try { playSound('shutter'); } catch(e) { console.warn("Audio fail", e); }
+            try { sfx.shutter.play(); } catch(e) {}
             
             setTimeout(() => {
                 flash.style.display = 'none';
@@ -467,18 +480,24 @@
             liveTag.style.display = 'none';
             
             loading.style.display = 'block';
-            loading.innerText = "PROCESSING_POSE...";
+            loading.innerText = "CAPTURING...";
 
             const cfg = getLayoutConfig();
-            const gifData = await makeGif(currentPoseFrames, cfg.photoW, cfg.photoH); 
+            
+            // Speed up GIF processing for mobile
+            // If GIF fails or takes too long (> 3s), we fallback to the first frame
+            const gifPromise = makeGif(currentPoseFrames, cfg.photoW * 0.7, cfg.photoH * 0.7);
+            const timeoutPromise = new Promise(r => setTimeout(() => r(currentPoseFrames[0]), 3000));
+            
+            const finalData = await Promise.race([gifPromise, timeoutPromise]);
             
             rawFrames.push(currentPoseFrames);
-            photos.push(gifData);
+            photos.push(finalData);
             
             updateInventory();
         } catch (err) {
-            console.error("Sequence Error:", err);
-            alert("Oops! Something went wrong during capture. Please try again.");
+            console.error("Mobile Capture Error:", err);
+            // Don't alert here to avoid blocking UI, just log it
         } finally {
             loading.style.display = 'none';
             startBtn.disabled = false;
@@ -623,12 +642,13 @@
         function makeGif(frames, w, h) {
             return new Promise(resolve => {
         gifshot.createGIF({ 
-            images: frames.length > 0 ? frames : [video], 
-            gifWidth: Math.round(w), 
-            gifHeight: Math.round(h), 
-            interval: 0.1,
-            numWorkers: 2, // Reducing workers for mobile stability
-            sampleInterval: 10
+            images: frames, 
+            gifWidth: Math.round(w * 0.5), 
+            gifHeight: Math.round(h * 0.5), 
+            interval: 0.2,
+            numWorkers: 0, // Zero workers = main thread (slow but safe for low-end mobile)
+            sampleInterval: 20, // Lower quality for speed
+            quality: 10
         }, 
         function(obj) { 
             if(!obj.error) {

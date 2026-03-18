@@ -347,13 +347,13 @@
         const frameImg = new Image();
 
         if (selectedLayout === 'layoutB') { maxPoses = 4; frameImg.src = 'frames/3.png'; } 
-        else if (selectedLayout === 'layoutC') { maxPoses = 3; frameImg.src = 'frames/2.png'; } 
-        else if (selectedLayout === 'layoutD') { maxPoses = 3; frameImg.src = 'frames/8.png'; } 
+        else if (selectedLayout === 'layoutC') { maxPoses = 3; frameImg.src = 'frames/8.png'; } 
+        else if (selectedLayout === 'layoutD') { maxPoses = 3; frameImg.src = 'frames/2.png'; } 
         else if (selectedLayout === 'layoutE') { maxPoses = 3; frameImg.src = 'frames/4.png'; } 
-        else if (selectedLayout === 'layoutF') { maxPoses = 2; frameImg.src = 'frames/6.png'; camBox.style.aspectRatio = "640/788"; } 
-        // else if (selectedLayout === 'layoutG') { maxPoses = 1; frameImg.src = 'frames/6.png'; camBox.style.aspectRatio = "640/788"; } 
+        // else if (selectedLayout === 'layoutF') { maxPoses = 2; frameImg.src = 'frames/6.png'; camBox.style.aspectRatio = "640/788"; } 
+        else if (selectedLayout === 'layoutG') { maxPoses = 1; frameImg.src = 'frames/6.png'; camBox.style.aspectRatio = "640/788"; } 
         // else if (selectedLayout === 'layoutH') { maxPoses = 3; frameImg.src = 'frames/8.png'; } 
-        // else if (selectedLayout === 'layoutI') { maxPoses = 4; frameImg.src = 'frames/9.png'; camBox.style.aspectRatio = "640/788"; } 
+        else if (selectedLayout === 'layoutI') { maxPoses = 4; frameImg.src = 'frames/9.png'; camBox.style.aspectRatio = "640/788"; } 
         // else if (selectedLayout === 'layoutJ') { maxPoses = 3; frameImg.src = 'frames/10.png'; }
         else { maxPoses = 3; frameImg.src = 'frames/1.png'; }
 
@@ -650,7 +650,7 @@
         function getLayoutConfig() {
             if (selectedLayout === 'layoutB') return { photoW: 710, photoH: 447, startX: 45, startY: 54, gap: 90 };
             if (['layoutC', 'layoutD', 'layoutE',].includes(selectedLayout)) return { photoW: 710, photoH: 549, startX: 50, startY: 133, gap: 190 };
-            if (selectedLayout === 'layoutF') return { photoW: 640, photoH: 788, startX: 80, startY: 290, gap: 193 };
+            // if (selectedLayout === 'layoutF') return { photoW: 640, photoH: 788, startX: 80, startY: 290, gap: 193 };
             if (selectedLayout === 'layoutG') return { photoW: 586, photoH: 798, startX: 343, startY: 372, gap: 0};
             if (selectedLayout === 'layoutI') {
             return {
@@ -665,18 +665,18 @@
                     ]
                 };
             }
-            if (selectedLayout === 'layoutJ') {
-            return {
-                photoW: 700,  // Lebar berdasarkan screenshot Canva kamu
-                photoH: 525,  // Tinggi berdasarkan screenshot Canva kamu
-                // Kita tentukan koordinat X dan Y untuk masing-masing dari 3 foto
-                positions: [
-                    { x: 50,  y: 133 },  // Foto 1 (Kiri Atas)
-                    { x: 50, y: 833 },  // Foto 2 (Kanan Atas)
-                    { x: 50,  y: 1533.5 }   // Foto 3 (Kiri Bawah) -> Angka 905 ini estimasi, silakan cek Y di Canva untuk kotak bawah
-                    ]
-                };
-            }
+            // if (selectedLayout === 'layoutJ') {
+            // return {
+            //     photoW: 700,  // Lebar berdasarkan screenshot Canva kamu
+            //     photoH: 525,  // Tinggi berdasarkan screenshot Canva kamu
+            //     // Kita tentukan koordinat X dan Y untuk masing-masing dari 3 foto
+            //     positions: [
+            //         { x: 50,  y: 133 },  // Foto 1 (Kiri Atas)
+            //         { x: 50, y: 833 },  // Foto 2 (Kanan Atas)
+            //         { x: 50,  y: 1533.5 }   // Foto 3 (Kiri Bawah) -> Angka 905 ini estimasi, silakan cek Y di Canva untuk kotak bawah
+            //         ]
+            //     };
+            // }
             return { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
         }
 

@@ -104,6 +104,27 @@
             z-index: 20; display: none; animation: blink 0.8s infinite;
         }
 
+        .flash-toggle-float {
+            position: absolute; bottom: 15px; right: 15px; 
+            z-index: 30; background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50px; padding: 5px 12px;
+            display: flex; align-items: center; gap: 8px;
+            cursor: pointer; backdrop-filter: blur(5px);
+            transition: 0.3s;
+        }
+        
+        .flash-toggle-float:hover { background: rgba(0,0,0,0.8); }
+        .flash-toggle-float .icon { font-size: 14px; }
+        .flash-toggle-float span { font-size: 9px; color: #fff; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+        .flash-on-indicator {
+            width: 8px; height: 8px; border-radius: 50%; background: #555;
+            transition: 0.3s;
+        }
+        .flash-active .flash-on-indicator { background: #ffd700; box-shadow: 0 0 10px #ffd700; }
+        .flash-active .icon { filter: drop-shadow(0 0 5px #ffd700); }
+
         /* --- INVENTORY: ARCHIVE LIST --- */
         .inventory-section {
             width: 100%; max-width: 500px; margin-top: 30px;
@@ -244,12 +265,7 @@
         </button>
         <div>SYS_SESSION // GEN_01</div>
     </div>
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <button id="flashBtn" onclick="toggleFlash()" style="padding: 5px 12px; font-size: 10px; background: transparent; border: 1px solid var(--ink); color: var(--ink); font-family: 'Space Mono', monospace; cursor: pointer; transition: 0.2s;">
-            ⚡ FLASH_OFF
-        </button>
-        <div class="pose-counter" id="poseDisplay">0/0</div>
-    </div>
+    <div class="pose-counter" id="poseDisplay">0/0</div>
     </div>
 
     <div class="cam-box" id="camBox">
@@ -260,6 +276,12 @@
         
         <video id="videoFeed" autoplay playsinline></video>
         <canvas id="resultCanvas"></canvas>
+
+        <div class="flash-toggle-float" id="flashToggle" onclick="toggleFlash()">
+            <div class="flash-on-indicator"></div>
+            <span class="icon">⚡</span>
+            <span>Flash</span>
+        </div>
     </div>
 
     <div class="inventory-section" id="invSection">
@@ -329,37 +351,27 @@
 
         async function toggleFlash() {
             flashEnabled = !flashEnabled;
-            const flashBtn = document.getElementById('flashBtn');
-            flashBtn.innerHTML = flashEnabled ? '⚡ FLASH_ON' : '⚡ FLASH_OFF';
-            
+            const toggle = document.getElementById('flashToggle');
             if (flashEnabled) {
-                flashBtn.style.background = "var(--ink)";
-                flashBtn.style.color = "var(--paper)";
+                toggle.classList.add('flash-active');
             } else {
-                flashBtn.style.background = "transparent";
-                flashBtn.style.color = "var(--ink)";
+                toggle.classList.remove('flash-active');
             }
 
-            // Test if hardware flash available and toggle for a split second to confirm
             const stream = video.srcObject;
             if (stream) {
                 const track = stream.getVideoTracks()[0];
-                const capabilities = track.getCapabilities();
+                const capabilities = track.getCapabilities ? track.getCapabilities() : {};
                 if (capabilities.torch) {
                     try {
                         await track.applyConstraints({ advanced: [{ torch: flashEnabled }] });
-                        // If we are just toggling the state, we don't want it to stay on 
-                        // unless they are in the middle of a pose. 
-                        // But for feedback, let's keep it on if flashEnabled is true?
-                        // Actually, better to only turn it on during capture sequence.
-                        // So let's turn it back off after 200ms if we just enabled it.
                         if (flashEnabled) {
                             setTimeout(() => {
                                 track.applyConstraints({ advanced: [{ torch: false }] });
-                            }, 200);
+                            }, 300);
                         }
                     } catch (e) {
-                        console.log("Torch not supported or failed:", e);
+                        console.log("Torch error:", e);
                     }
                 }
             }
@@ -481,10 +493,13 @@
         
         if (flashEnabled) {
             flash.style.display = 'block';
+            flash.style.background = '#fffdf0'; // Warm white for better skin tone
             flash.style.opacity = '1';
-            if (track && track.getCapabilities().torch) {
+            if (track && track.getCapabilities && track.getCapabilities().torch) {
                 try { await track.applyConstraints({ advanced: [{ torch: true }] }); } catch(e) {}
             }
+            // WAIT A BIT FOR CAMERA AUTO-EXPOSURE TO ADJUST
+            await new Promise(r => setTimeout(r, 250));
         }
 
         liveTag.style.display = 'block';

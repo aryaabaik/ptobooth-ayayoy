@@ -353,10 +353,16 @@
         async function toggleFlash() {
             flashEnabled = !flashEnabled;
             const toggle = document.getElementById('flashToggle');
+            const flashEl = document.getElementById('flash');
+            
             if (flashEnabled) {
                 toggle.classList.add('flash-active');
+                flashEl.style.display = 'block';
+                flashEl.style.opacity = '0.4'; // Semi-transparent "Stay-on" light
+                flashEl.style.background = '#fffdf0';
             } else {
                 toggle.classList.remove('flash-active');
+                flashEl.style.display = 'none';
             }
 
             const stream = video.srcObject;
@@ -366,11 +372,6 @@
                 if (capabilities.torch) {
                     try {
                         await track.applyConstraints({ advanced: [{ torch: flashEnabled }] });
-                        if (flashEnabled) {
-                            setTimeout(() => {
-                                track.applyConstraints({ advanced: [{ torch: false }] });
-                            }, 300);
-                        }
                     } catch (e) {
                         console.log("Torch error:", e);
                     }
@@ -494,13 +495,12 @@
         
         if (flashEnabled) {
             flash.style.display = 'block';
-            flash.style.background = '#fffdf0'; // Warm white for better skin tone
-            flash.style.opacity = '1';
+            flash.style.background = '#fffdf0';
+            flash.style.opacity = '1.0'; // Full brightness for capture
             if (track && track.getCapabilities && track.getCapabilities().torch) {
                 try { await track.applyConstraints({ advanced: [{ torch: true }] }); } catch(e) {}
             }
-            // WAIT A BIT FOR CAMERA AUTO-EXPOSURE TO ADJUST
-            await new Promise(r => setTimeout(r, 250));
+            await new Promise(r => setTimeout(r, 200));
         }
 
         liveTag.style.display = 'block';
@@ -521,11 +521,16 @@
         }
         
         setTimeout(async () => {
-            flash.style.display = 'none';
-            camBox.classList.remove('glitch-active');
-            if (track && track.getCapabilities().torch) {
-                try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e) {}
+            if (!flashEnabled) {
+                flash.style.display = 'none';
+                if (track && track.getCapabilities && track.getCapabilities().torch) {
+                    try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e) {}
+                }
+            } else {
+                // Dim down to "posing" brightness
+                flash.style.opacity = '0.4';
             }
+            camBox.classList.remove('glitch-active');
         }, 400);
 
         countdownEl.style.display = 'none';

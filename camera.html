@@ -218,9 +218,23 @@
 }
 
         #loading { 
-            display: none; font-family: 'Archivo Black'; margin: 20px; 
-            color: var(--ink); text-align: center; animation: blink 0.5s infinite alternate;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--paper); z-index: 5000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            font-family: 'Archivo Black'; text-align: center;
         }
+        
+        .loading-cat {
+            width: 150px; margin-bottom: 20px;
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        .loading-text {
+            font-size: 1.2rem; color: var(--ink);
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
         .scanlines {
             position: fixed;
             top: 0; left: 0;
@@ -290,7 +304,10 @@
         <div class="inventory-grid" id="invGrid"></div>
     </div>
 
-    <div id="loading">EXECUTING_ARCHIVE...</div>
+    <div id="loading">
+        <img src="images/loading.gif" class="loading-cat" alt="Loading..">
+        <div class="loading-text">EXECUTING_ARCHIVE...</div>
+    </div>
 
     <div class="filter-container" id="filterContainer">
         <div class="filter-bar">
@@ -536,7 +553,7 @@
         countdownEl.style.display = 'none';
         liveTag.style.display = 'none';
         
-        loading.style.display = 'block';
+        loading.style.display = 'flex';
         const gifData = await makeGif(currentPoseFrames); 
         rawFrames.push(currentPoseFrames);
         photos.push(gifData);
@@ -679,8 +696,8 @@
         }
 
         async function renderFinalFrame() {
-    loading.style.display = 'block';
-    loading.innerText = "GENERATING_ARCHIVE...";
+    loading.style.display = 'flex';
+    loading.querySelector('.loading-text').innerText = "GENERATING_ARCHIVE...";
     
     playSound('printer', 3000);
 

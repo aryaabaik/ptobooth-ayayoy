@@ -244,7 +244,12 @@
         </button>
         <div>SYS_SESSION // GEN_01</div>
     </div>
-    <div class="pose-counter" id="poseDisplay">0/0</div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <button id="flashBtn" onclick="toggleFlash()" style="padding: 5px 12px; font-size: 10px; background: transparent; border: 1px solid var(--ink); color: var(--ink); font-family: 'Space Mono', monospace; cursor: pointer; transition: 0.2s;">
+            ⚡ FLASH_OFF
+        </button>
+        <div class="pose-counter" id="poseDisplay">0/0</div>
+    </div>
     </div>
 
     <div class="cam-box" id="camBox">
@@ -317,9 +322,48 @@
         let photos = []; 
         let rawFrames = []; 
         let currentFilter = 'none';
+        let flashEnabled = false;
         
         const selectedLayout = localStorage.getItem('selectedLayout') || 'layoutA';
         const camBox = document.getElementById('camBox');
+
+        async function toggleFlash() {
+            flashEnabled = !flashEnabled;
+            const flashBtn = document.getElementById('flashBtn');
+            flashBtn.innerHTML = flashEnabled ? '⚡ FLASH_ON' : '⚡ FLASH_OFF';
+            
+            if (flashEnabled) {
+                flashBtn.style.background = "var(--ink)";
+                flashBtn.style.color = "var(--paper)";
+            } else {
+                flashBtn.style.background = "transparent";
+                flashBtn.style.color = "var(--ink)";
+            }
+
+            // Test if hardware flash available and toggle for a split second to confirm
+            const stream = video.srcObject;
+            if (stream) {
+                const track = stream.getVideoTracks()[0];
+                const capabilities = track.getCapabilities();
+                if (capabilities.torch) {
+                    try {
+                        await track.applyConstraints({ advanced: [{ torch: flashEnabled }] });
+                        // If we are just toggling the state, we don't want it to stay on 
+                        // unless they are in the middle of a pose. 
+                        // But for feedback, let's keep it on if flashEnabled is true?
+                        // Actually, better to only turn it on during capture sequence.
+                        // So let's turn it back off after 200ms if we just enabled it.
+                        if (flashEnabled) {
+                            setTimeout(() => {
+                                track.applyConstraints({ advanced: [{ torch: false }] });
+                            }, 200);
+                        }
+                    } catch (e) {
+                        console.log("Torch not supported or failed:", e);
+                    }
+                }
+            }
+        }
 
         // AUDIO SYSTEM
         const sfx = {
@@ -431,6 +475,18 @@
         playSound('beep', 1000);
         await new Promise(r => setTimeout(r, 1000));
 
+        // --- FLASH PREPARATION ---
+        const flash = document.getElementById('flash');
+        const track = video.srcObject ? video.srcObject.getVideoTracks()[0] : null;
+        
+        if (flashEnabled) {
+            flash.style.display = 'block';
+            flash.style.opacity = '1';
+            if (track && track.getCapabilities().torch) {
+                try { await track.applyConstraints({ advanced: [{ torch: true }] }); } catch(e) {}
+            }
+        }
+
         liveTag.style.display = 'block';
         const currentPoseFrames = [];
         for(let i=0; i<6; i++) {
@@ -438,19 +494,23 @@
             await new Promise(r => setTimeout(r, 150));
         }
 
-        // --- FLASH + SHUTTER + GLITCH ---
-        const flash = document.getElementById('flash');
-        
-        // Aktifkan Efek
-        flash.style.display = 'block';
-        camBox.classList.add('glitch-active'); // MULAI GLITCH
+        // --- SHUTTER + GLITCH ---
+        camBox.classList.add('glitch-active');
         playSound('shutter', 2000); 
+
+        // If flash was ON, turn it off now (or if it was OFF, maybe do a quick visual blink)
+        if (!flashEnabled) {
+            flash.style.display = 'block';
+            flash.style.opacity = '0.8';
+        }
         
-        // Matikan Flash & Glitch setelah durasi singkat
-        setTimeout(() => {
+        setTimeout(async () => {
             flash.style.display = 'none';
-            camBox.classList.remove('glitch-active'); // STOP GLITCH
-        }, 400); // Glitch cuma 0.4 detik biar dramatis
+            camBox.classList.remove('glitch-active');
+            if (track && track.getCapabilities().torch) {
+                try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e) {}
+            }
+        }, 400);
 
         countdownEl.style.display = 'none';
         liveTag.style.display = 'none';

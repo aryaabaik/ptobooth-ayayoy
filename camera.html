@@ -219,22 +219,34 @@
 
         #loading { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--paper); z-index: 5000;
+            background: rgba(255, 245, 248, 0.95); z-index: 5000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
-            font-family: 'Archivo Black'; text-align: center;
+            font-family: 'Archivo Black'; text-align: center; backdrop-filter: blur(10px);
         }
         
-        .loading-cat {
-            width: 150px; margin-bottom: 20px;
-            animation: bounce 0.6s infinite alternate;
+        .cat-wrapper {
+            position: relative; width: 150px; height: 150px;
+            margin-bottom: 20px;
+        }
+
+        .cat-svg {
+            width: 100%; height: 100%;
+            animation: bounce-cat 0.8s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        .loading-cat-img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: contain; z-index: 10;
         }
 
         .loading-text {
             font-size: 1.2rem; color: var(--ink);
             letter-spacing: 2px; text-transform: uppercase;
+            animation: pulse-text 1.5s infinite;
         }
 
-        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+        @keyframes bounce-cat { from { transform: translateY(0) scale(1); } to { transform: translateY(-20px) scale(0.95); } }
+        @keyframes pulse-text { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         .scanlines {
             position: fixed;
             top: 0; left: 0;
@@ -305,8 +317,19 @@
     </div>
 
     <div id="loading">
-        <img src="images/loading.gif" class="loading-cat" alt="Loading..">
-        <div class="loading-text">EXECUTING_ARCHIVE...</div>
+        <!-- SVG CAT ANIMATION (FALLBACK) -->
+        <div class="cat-wrapper">
+            <svg class="cat-svg" viewBox="0 0 100 100">
+                <path d="M20 50 Q50 20 80 50 T20 50" fill="white" stroke="#ff85a1" stroke-width="4"/>
+                <path d="M30 35 L20 15 L40 30" fill="white" stroke="#ff85a1" stroke-width="2"/>
+                <path d="M70 35 L80 15 L60 30" fill="white" stroke="#ff85a1" stroke-width="2"/>
+                <circle cx="40" cy="45" r="3" fill="#4a1c3e"/>
+                <circle cx="60" cy="45" r="3" fill="#4a1c3e"/>
+                <path d="M45 52 Q50 58 55 52" fill="none" stroke="#ff85a1" stroke-width="2"/>
+            </svg>
+            <img src="images/loading.gif" class="loading-cat-img" onerror="this.style.display='none'">
+        </div>
+        <div class="loading-text">GENERATING_ARCHIVE...</div>
     </div>
 
     <div class="filter-container" id="filterContainer">

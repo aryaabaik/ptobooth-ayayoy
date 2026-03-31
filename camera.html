@@ -553,11 +553,10 @@
         countdownEl.style.display = 'none';
         liveTag.style.display = 'none';
         
-        loading.style.display = 'flex';
+        // --- SKIP LOADING FOR INDIVIDUAL POSES ---
         const gifData = await makeGif(currentPoseFrames); 
         rawFrames.push(currentPoseFrames);
         photos.push(gifData);
-        loading.style.display = 'none';
         updateInventory();
     }
     startBtn.disabled = false;

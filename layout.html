@@ -6,14 +6,15 @@
     <title>SELECT FRAME — TIMELESS ARCHIVE</title>
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@300;600;800&family=Space+Mono&display=swap" rel="stylesheet">
     <style>
-        /* --- DESIGN SYSTEM --- */
+        /* --- DESIGN SYSTEM: AESTHETIC PINK --- */
         :root {
-            --bg: #0a0a0a;
-            --paper: #f4f1ea;
-            --ink: #111;
-            --accent: #ff3e00;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
+            --bg: #fff5f8;
+            --paper: #ffffff;
+            --ink: #4a1c3e;
+            --accent: #ff85a1;
+            --accent-soft: #fbb1bd;
+            --glass: rgba(255, 255, 255, 0.7);
+            --border: rgba(255, 133, 161, 0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
@@ -32,30 +33,29 @@
         .grid-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-image: 
-                linear-gradient(var(--border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+                linear-gradient(rgba(255, 133, 161, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 133, 161, 0.1) 1px, transparent 1px);
             background-size: 50px 50px;
             z-index: -1;
-            opacity: 0.3;
         }
 
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 50%, rgba(255, 133, 161, 0.05) 50%);
             background-size: 100% 4px;
-            z-index: 1000; pointer-events: none; opacity: 0.5;
+            z-index: 1000; pointer-events: none;
         }
 
         /* --- CUSTOM CURSOR --- */
         #cursor {
-            width: 20px; height: 20px;
-            border: 1px solid var(--paper);
+            width: 25px; height: 25px;
+            border: 2px solid var(--accent);
             position: fixed;
             pointer-events: none;
             z-index: 9999;
             transition: transform 0.1s ease, background 0.3s ease;
             transform: translate(-50%, -50%);
-            mix-blend-mode: difference;
+            mix-blend-mode: multiply;
         }
 
         /* --- HEADER --- */
@@ -95,7 +95,7 @@
             text-transform: uppercase;
             letter-spacing: -2px;
             margin-bottom: 20px;
-            background: linear-gradient(to bottom, #fff 40%, #555);
+            background: linear-gradient(to bottom, var(--ink) 40%, var(--accent));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -141,9 +141,9 @@
         }
 
         .tab-btn.active {
-            background: var(--paper);
-            color: var(--bg);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 10px 20px rgba(255, 133, 161, 0.3);
         }
 
         /* --- GRID --- */
@@ -201,10 +201,10 @@
         }
 
         .frame-card:hover {
-            border-color: var(--paper);
+            border-color: var(--accent);
             transform: translateY(-10px);
-            background: rgba(255,255,255,0.02);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 40px rgba(255, 133, 161, 0.2);
         }
 
         .frame-card:hover img {
